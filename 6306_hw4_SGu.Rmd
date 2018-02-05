@@ -1,0 +1,73 @@
+---
+title: "6306_hw4_SGu"
+author: "Shanqing Gu"
+date: "1/31/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## HW4_Question 1: FiveThirtyEight Data
+
+# 1a. Install the fivethirtyeight package
+```{r fivethirtyeight}
+library(fivethirtyeight)
+```
+
+# 1b. In the list of Data sets in package 'fivethirtyeight', assign the 18th data set to an object 'df'
+
+```{r df}
+dp <- data(package="fivethirtyeight")
+df <- college_recent_grads
+```
+
+# 1c. Use a more detailed list of the data sets to write out the URL in a comment to the relaed news story
+```{r fivethirtyeight package}
+vignette("fivethirtyeight", package = "fivethirtyeight")
+```
+
+* Story about: http://fivethirtyeight.com
+
+# 1d. Give the diamensions and column names of this data frame
+```{r dim}
+dim(df)
+colnames(df)
+```
+
+## HW4_Question 2: Data summary
+
+# 2a. ncol
+```{r col1}
+ncol(df)
+```
+
+# 2b. Generate a count of each unique major_catergory in the data frame.
+
+```{r col2}
+library("plyr")
+require(plyr)
+
+major_count <- as.data.frame(table(df$major_category))
+major_count
+
+```
+
+#2c Barplot of major_count
+
+```{R barplot}
+par(mai=c(1,4,1,1))
+barplot (major_count$Freq, las=2, horiz=TRUE, main = " The Economic Guide To Picking A College Major", xlab = "Major Category Frequency", col=rgb(0.2,0.4,0.6,0.6), names.arg=(major_count$Var1), font=1)
+title(ylab="Major", mgp=c(16,1,0), cex.lab=1.2)
+```
+
+#2d Write the fivethirtyeight data to a csv file
+
+```{R csv}
+write.csv(df, file = "df538.csv", row.names=FALSE)
+```
+
+## HW_Questions 3: Codebook
+
+## https://github.com/guvp2017/SMU6306.git
