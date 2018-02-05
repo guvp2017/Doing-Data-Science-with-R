@@ -1,2 +1,2 @@
 # SMU6306
-Homework Repository for FiveThirtyEight Data
+Homework Repository for FiveThirtyEight Data analysis (HW4)
