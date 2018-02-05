@@ -1,0 +1,90 @@
+---
+title: "6306_hw3_SGu"
+author: "Shanqing Gu"
+date: "1/27/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## HW3_Q1: GitHub Cloning
+
+* Using Git, clone one repositiory to my mac:
+git clone https://github.com/awesomedata/awesome-public-datasets.git
+
+* Creat a new directory with code:  mkdir hw3/q1
+
+* navigate to a new directory:   cd awesome-public-datasets
+
+* clone the repositiory to hw3:  cp -r awesome-public-datasets myrepo/hw3
+
+
+## HW3_Q2: Data Summary
+
+* a. Read in titanic.csv via read.csv and assign it to df. This dataset follows the passengers aboard the Titanic, including their fees paid, rooms rented, and survivorship status.
+
+```{r df} 
+df= read.csv("/Users/shanqinggu/Desktop/titanic.csv", header = TRUE)
+```
+
+* b. Plot the frequency of females and males aboard the Titanic.
+
+```{r Frequency} 
+df= read.csv("/Users/shanqinggu/Desktop/titanic.csv", header = TRUE)
+df$Sex <- as.factor(df$Sex)
+plot(df$Sex, main="Respective count of females and males aboard Titanic", xlab= "Sex Distribution", ylab= "Frenquency")
+```
+
+* c. Output the means of Age, Fare, and Survival.
+
+```{r means} 
+df= read.csv("/Users/shanqinggu/Desktop/titanic.csv", header = TRUE)
+mAge=apply(as.matrix(df$Age),2,mean,na.rm=TRUE)
+mAge
+mFare=apply(as.matrix(df$Fare),2,mean,na.rm=TRUE)
+mFare
+mSurvived= apply(as.matrix(df$Survived),2,mean,na.rm=TRUE)
+mSurvived
+```
+
+## HW3_Q3: Function building
+
+```{r Function}
+
+## a. Creat objects for MedianAge, Rdurations, MeanRSES5, SdRSES5.
+sleep <- read.csv("/Users/shanqinggu/Desktop/sleep_data_01.csv", header = TRUE)
+
+# MedianAge
+MedianAge <- apply(as.matrix(sleep$Age),2,median,na.rm=TRUE)
+
+# Rduration
+Rduration1 <- apply(as.matrix(sleep$Duration), 2, range, na.rm=TRUE)[2,] 
+Rduration2 <- apply(as.matrix(sleep$Duration), 2, range, na.rm=TRUE)[1,]
+Rduration <- Rduration1-Rduration2
+
+# MesnRSES
+MeanRSES <- apply(as.matrix(sleep$RSES), 2, mean, na.rm=TRUE)
+
+# SdRSES
+SdRSES <- apply(as.matrix(sleep$RSES), 2, sd, na.rm=TRUE)
+
+
+## b. Create a data.frame object called report
+catVars <- c("MedianAge","MeanRSES","SdRSES", "Rduration")
+Values <- c(MedianAge, MeanRSES, SdRSES, Rduration)
+report <-data.frame("MedianAge"=MedianAge, "MeanRSES"=MeanRSES, "SdRSES"=SdRSES, "Rduration"=Rduration)
+report
+
+
+## c. Change column names to MedianAge, SelfEsteem, SE_SD and DurationRange
+report=setNames(report, c("MedianAge", "SelfEsteem", "SE_SD", "DurationRange"))
+report
+
+## d. Round the report to at most 2 digits: leaving this as as the closing line to the function
+report <- round(report, digits=2)
+
+## e. Run the function on sleep data to show the output
+report
+```

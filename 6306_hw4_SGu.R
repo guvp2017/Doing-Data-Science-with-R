@@ -40,3 +40,5 @@ title(ylab="Major", mgp=c(16,1,0), cex.lab=1.2)
 write.csv(df, file = "df538.csv", row.names=FALSE)
 
 ## HW_Questions 3: Codebook
+
+## https://github.com/guvp2017/SMU6306.git
