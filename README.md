@@ -1,2 +1,2 @@
 # SMU6306
-Homework Repository
+Homework Repository for FiveThirtyEight Data
