@@ -1,0 +1,95 @@
+---
+title: "SGu_6306_HW5"
+author: "Shanqing Gu"
+date: "2/10/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## MSDS-6306 Unit 05 Homework Assignment
+
+# Q1: Data Munging
+
+# Q1_a: Import yob2016.txt file into R and assign df which consists 3 columns with names.
+
+```{r q1a}
+df <- read.table("/Users/shanqinggu/Desktop/yob2016.txt", header=FALSE, sep=";")
+df <- as.data.frame(df)
+colnames(df) <- c("Names", "Sex", "Year_2016")
+head(df)
+```
+
+# Q1_b: Display the summary and structure of df
+
+```{r q1b}
+summary(df)
+str(df)
+```
+
+# Q1_c: Find name with three y's at the end of them
+```{r q1c}
+grep("yyy", df$Names, value=TRUE)
+```
+
+# Q1_d: Remove redundant observation and save the remaining dataset as y2016
+```{r q1d}
+y2016 <- subset(df, Names!="Fionayyy")
+```
+
+# Q2: Data Merging
+
+# Q2_a: Import yob2015.txt file into R and assign df2 which consists 3 columns with names.
+
+```{r q2a}
+df2 <- read.table("/Users/shanqinggu/Desktop/yob2015.txt", header=FALSE, sep=",")
+df2 <- as.data.frame(df2)
+colnames(df2) <- c("Names", "Sex", "Year_2015")
+head(df2)
+```
+
+# Q2_b: Display last ten rows and describe
+
+```{r q2b}
+tail(df2,10)
+```
+# Interesting to me is all the names are boy names.
+
+# Q2_c: Merge y2016 and y2015 by Name column and assign it to final
+```{r q2c}
+final <- merge.data.frame(df, df2, by="Names", all=FALSE)
+head(final)
+```
+
+# Q3: Data Summary
+
+# Q3_a: Creat a new column called "Total" in final and add together to address how many people were given popular names.
+```{r q3a}
+Total <- final$Year_2015 + final$Year_2016
+final.total <- cbind(final, Total)
+sum(final.total$Total)
+```
+
+# Q3_b: Sort the data by Total and list the top 10 most popular names
+```{r q3b}
+final.sort <- final.total[order(final.total$Total,decreasing=TRUE),]
+head(final.sort, 10)
+```
+
+# Q3_c Top 10 most poular girl's names
+```{r q3c}
+final.girls<-final.sort[final.sort$Sex.x=="F" & final.sort$Sex.y=="F",]
+girls.top10 <- head(final.girls,10)
+girls.top10
+```
+
+# Q3_d Write these top 10 girl names and their Totals to a csv file
+```{r q3d}
+write.csv(girls.top10[,c("Names","Total")], file="girlsTop10.csv",row.names=FALSE)
+```
+
+# Q4: Upload to GitHub
+
+# https://github.com/guvp2017/SMU6306.git

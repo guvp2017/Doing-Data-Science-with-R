@@ -1,0 +1,65 @@
+# MSDS 6306 HW5 Codebook
+
+# MSDS-6306 Unit 05 Homework Assignment
+
+# Q1: Data Munging
+
+# Q1_a: Import yob2016.txt file into R and assign df which consists 3 columns with names.
+df <- read.table("/Users/shanqinggu/Desktop/yob2016.txt", header=FALSE, sep=";")
+df <- as.data.frame(df)
+colnames(df) <- c("Names", "Sex", "Year_2016")
+head(df)
+
+# Q1_b: Display the summary and structure of df
+summary(df)
+str(df)
+
+# Q1_c: Find name with three y's at the end of them
+grep("yyy", df$Names, value=TRUE)
+
+# Q1_d: Remove redundant observation and save the remaining dataset as y2016
+y2016 <- subset(df, Names!="Fionayyy")
+
+# Q2: Data Merging
+
+# Q2_a: Import yob2015.txt file into R and assign df2 which consists 3 columns with names.
+df2 <- read.table("/Users/shanqinggu/Desktop/yob2015.txt", header=FALSE, sep=",")
+df2 <- as.data.frame(df2)
+colnames(df2) <- c("Names", "Sex", "Year_2015")
+head(df2)
+
+# Q2_b: Display last ten rows and describe
+tail(df2,10)
+# Interesting to me is all the names are boy names.
+
+# Q2_c: Merge y2016 and y2015 by Name column and assign it to final
+final <- merge.data.frame(df, df2, by="Names", all=FALSE)
+final
+
+# Q3: Data Summary
+
+# Q3_a: Creat a new column called "Total" in final and rank the popular names.
+Total <- final$Year_2015 + final$Year_2016
+final.total <- cbind(final, Total)
+
+install.packages("plyr")
+library(plyr)
+final.count <- as.data.frame(table(final.total$Names))
+final.count
+
+# Q3_b: Sort the data by Total and list the top 10 most popular names
+final.sort <- final.total[order(final.total$Total,decreasing=TRUE),]
+head(final.sort, 10)
+
+# Q3_c Top 10 most poular girl's names
+final.girls<-final.sort[final.sort$Sex.x=="F" & final.sort$Sex.y=="F" ,]
+girls.top10 <- head(final.girls,10)
+girls.top10
+
+
+# Q3_d Write these top 10 girl names and their Totals to a csv file
+
+write.csv(girls.top10[,c("Names","Total")], file="girlsTop10.csv",row.names=FALSE)
+
+# Q4: Upload to GitHub
+# https://github.com/guvp2017/SMU6306.git
