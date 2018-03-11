@@ -1,0 +1,121 @@
+---
+title: "SGu_6306_HW_09"
+author: "Shanqing Gu"
+date: "3/10/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Libraries used for this assignment: MSDS 6306_Unit-09
+library(xml2)
+library(rvest)
+library(tidyr)
+library(ggplot2)
+```
+
+## Q1: Harry Porter Cast
+
+#### Q1a: Navigate webpage: "http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1" 
+
+#### Q1b: Scrape the cast list table and make it a data frame
+
+```{r Q1b}
+
+# Read webpage
+webpage <- 'http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1' 
+HarryPorter <- xml2::read_html(webpage) 
+
+# Scrape the table of interest and make it a data frame
+
+CastList <- rvest::html_nodes(HarryPorter, xpath = '//*[@id="fullcredits_content"]/table[3]')
+CastTable <-rvest::html_table(CastList)
+CastData <- data.frame(CastTable)
+```
+
+#### Q1c: Clean up the table with requirements (no blank observations, add column names, fix Mr. Warwick issue, remove specific row #93)
+
+```{r Q1c}
+# Remove 1st blank row and 2 blank columns 
+CastData <- CastData[-1, -c(1,3)]
+
+# Add column names
+colnames(CastData) <- c("Actor/Actress", "Character")
+
+# Rmeove one row contains "Rest of cast listed alphabetically"
+CastRemove <- subset(CastData, Character!="Rest of cast listed alphabetically:")
+
+# Find name contains "Warwick"
+grep("Warwick", CastData$'Actor/Actress', value=TRUE)
+
+# Replace with "Griphook / Professor Filius Flitwick"
+CastRemove[10,2]=gsub('\n','',CastRemove[10,2])
+
+# Rewrite the row numbers
+rownames(CastRemove) <- 1:nrow(CastRemove)
+```
+
+#### Q1d: Split the actor/actress name into two columns
+```{r Q1d}
+# Split names to firstnames and lastnames
+SplitNames <- tidyr::extract(CastRemove, "Actor/Actress", c("FirstName", "LastName"), "(.*) ([^ ]+)$")
+```
+
+#### Q1e: Present the first 10 rows of this data frame
+```{r Q1e}
+Top10List<-head(SplitNames, 10)
+Top10List
+```
+## Q2: Sports Ball
+
+#### Q2a: Navigate webpage: "http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs""
+
+#### Q2b: Scrape the "Shooting Statistics" table
+
+```{r Q2b}
+webpage <- 'http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs'
+Shooting <- read_html(webpage)
+ShStat <- rvest::html_nodes(Shooting, xpath='//*[@id="my-players-table"]/div[3]/div[3]/table')
+StatTable <- rvest::html_table(ShStat)
+TableFrame <- data.frame(StatTable)
+```
+
+#### Q2c: Clean the table
+
+```{r Q2c}
+# Remove the first 2 rows with row names and the last total row
+TableRemove <- TableFrame [-c(1,2,20),]
+rownames(TableRemove) <- 1:nrow(TableRemove) # Update row index
+
+# Split names and postions
+names(TableRemove)[1] <- paste("Player")
+TableSplit <- separate(TableRemove, col=Player, into=c('Name', 'Position'), sep=", ")
+head(TableSplit)
+
+#Convert relevant columns to numeric vectors
+sapply(TableSplit,mode)
+TableSplit[,3:ncol(TableSplit)] <- sapply(TableSplit[,3:ncol(TableSplit)],as.numeric)
+sapply(TableSplit, class)
+```
+
+#### Q2d: Creat a colorful bar chart
+
+```{r Q2d}
+# Order by decreasing field goals percentage  
+TableOrder <- TableSplit[order(TableSplit$X4, decreasing=FALSE),]
+
+# Make bar chart with ggplot2 
+ggplot(TableOrder, aes(reorder(Name, `X4`),`X4`, fill=Position)) + geom_bar(stat="identity") +
+ggtitle('Field Goals Percentage Per Game') +
+ylab('Field Goals Percentage Per Game')	+ xlab('Player Name') +
+theme(plot.title=element_text(hjust = .5), axis.ticks.y=element_blank(),axis.ticks.x=element_blank()) +
+theme(axis.text.x = element_text(angle=60,hjust=1))
+```
+
+
+
+
+#### GitHub address for this assignment (MSDS 6306_Unit 09): 
+
+https://github.com/guvp2017/SMU6306.git
