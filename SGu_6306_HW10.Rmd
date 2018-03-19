@@ -1,0 +1,117 @@
+---
+title: "SG_6306_HW10"
+author: "Shanqing Gu"
+date: "3/18/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Question of Interest: where to build new VA hospitals in the mainland United Staes?
+
+### Question 1: Mental Health Clinics
+
+#### Q1a: Loading data set in RDA file from a survey conducted in 2015
+
+```{r q1a}
+# Loading RDA file from a survey conducted in 2015
+load("/Users/shanqinggu/Desktop/SMU_2018/MSDS 6306 Data Science/6306_Unit-10_Exploratory Data Analysis/Unit10slidesandHW/N-MHSS-2015-DS0001-bndl-data-r/N-MHSS-2015-DS0001-data/N-MHSS-2015-DS0001-data-r.rda")
+
+MHSurvey <- load("/Users/shanqinggu/Desktop/SMU_2018/MSDS 6306 Data Science/6306_Unit-10_Exploratory Data Analysis/Unit10slidesandHW/N-MHSS-2015-DS0001-bndl-data-r/N-MHSS-2015-DS0001-data/N-MHSS-2015-DS0001-data-r.rda")
+
+# Check this RDA file
+MHSurvey
+head(mh2015_puf)
+```
+
+#### Q1b: Creat the codes which list the State abbrevations without their counts, one abbrevation per State value
+
+```{r q1b}
+# Survey list
+SurveyList <- as.data.frame(table(mh2015_puf$LST))
+head(SurveyList)
+
+# VA list with counts
+VAList<-mh2015_puf[which(mh2015_puf$PUBLICAGENCY=="Department of Veterans Affairs"),c(2,15)]
+
+head(VAList)
+
+table(VAList$LST)
+```
+
+#### Q1c: Creat VA medical centers in the mainland United States
+
+```{r 1c}
+# Keep DC, but omit Alaska, Hawaii and US territories
+ListTable <- as.data.frame(table(VAList$LST))
+colnames(ListTable) <- c("State", "Counts")
+RemoveList <- ListTable[-c(1,4,13,14,42,50),]
+rownames(RemoveList) <- 1:nrow(RemoveList)
+RemoveList
+```
+
+#### Q1d: Creat a ggplot barchart of this filtered data set (vary the bar's colors by State)
+
+```{r 1d}
+library(ggplot2)
+ggplot(RemoveList, aes(reorder(RemoveList$State, RemoveList$Counts), RemoveList$Counts))+geom_bar(aes(fill=RemoveList$State), stat="identity") +
+ggtitle("Distribution of VA Medical Centers in mainland United States") + theme(plot.title=element_text(hjust=0.5)) + xlab('Mainland of the United States') + ylab('Numbers of VA Medical Centers')
+```
+
+### Question 2: Cleaning and Bringing in New Features
+
+#### Q2a: Introduce new vecor of square miles for each state
+
+#### The reasons for this file can not be merged into the Q1 file: row numbers are diffrent, and state names are not fitting well in two files 
+
+```{r q2a}
+Size<- read.csv(file="/Users/shanqinggu/Desktop/SMU_2018/MSDS 6306 Data Science/6306_Unit-10_Exploratory Data Analysis/Unit10slidesandHW/statesize.csv")
+
+head(Size)
+```
+
+#### Q2b: Correct the problem as mentioned in Q2a
+
+```{r q2b}
+# Omit Alaska and Hawaii
+SortSize<-Size[order(Size$Abbrev),]
+SortSize <- SortSize[-c(1,11),]
+rownames(SortSize) <- 1:nrow(SortSize)
+
+# Omit DC
+RemoveList <- RemoveList[-7,]
+rownames(RemoveList) <- 1:nrow(RemoveList)
+
+# Rename column names to introduce "State" for "Abbrev""
+colnames(SortSize) <- c("StateName", "SqMiles", "State", "Region")
+
+# Merge two files by State
+library(stringr)
+RemoveList$State=str_trim(RemoveList$State,"right")
+MergedFile <-merge.data.frame(SortSize, RemoveList, by="State", all=FALSE)
+MergedFile
+```
+
+#### Q2c: Calculate a new variable indicating the VA hospitals per thousand square miles
+
+```{r q2c}
+MergedFile$Distribution<-MergedFile$Counts*1000/MergedFile$SqMiles
+head(MergedFile)
+```
+
+#### Q2d: Creat ggplot which consider the VAs per square thousand miles
+
+```{r q2d}
+# Change title and axes, bars in descending order, color-code the bars based on Region, and keep the legend
+
+ggplot(MergedFile, aes(reorder(MergedFile$State, - MergedFile$Distribution, decreasing=TRUE), MergedFile$Distribution)) + geom_bar(aes(fill=MergedFile$Region), stat="identity") + ggtitle("Distribution of VA Medical Centers in mainland United States (per thousand square miles)") + theme(plot.title=element_text(hjust=0.5))  + xlab("Mainland of the United States") + ylab("Numbers of VA medical centers per square thousand miles") 
+```
+
+#### Q2e: Conclusion
+
+From the metric in Q2d, we can find that Northeast region (such as: RI, NJ, MA) seems relatively high for the VA medical centers per thousnad square miles, while West region (such as UT, WY, MT, ND) has less VA medical centers. Given these data, we also find Ohio state has more VA medical centers than other midwest states and is very close to New York State. For the future planning, we would recommend to add more VA medical centers in New York and Ohio state to meet the potential fast growth in need. 
+
+#### * GitHub address for this assignment (MSDS 6306_Unit 10): https://github.com/guvp2017/SMU6306.git
+
