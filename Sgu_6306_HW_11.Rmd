@@ -1,0 +1,153 @@
+insta---
+title: "SGu_6306_HW_11"
+author: "Shanqing Gu"
+date: "3/29/2018"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### MSDS 6306 Unit 11: DDS Time Series Assignment 
+
+### Q1: Brief Financial Daa
+
+#### Q1a: Access to the DAX index in EuStockMarkets
+
+```{r Q1a}
+data(EuStockMarkets) # European Stock Markets 1991-1998
+head(EuStockMarkets)
+
+DAX_Index <- EuStockMarkets[,1] # Pull specifically the DAX Index
+head(DAX_Index)
+```
+
+#### Q1b: Creat a rudimentary plot (blue line, informative title, label the axes accurately, add vertical line at year 1997)
+
+```{r Q1b}
+DAX_stock <- ts(DAX_Index, frequency=260, start = c(1991,130))
+plot(DAX_stock, col="blue", xlab="Time", ylab="DAX Index")
+title(main="Daily Closing Prices of DAX Index, 1991–1998", col.main="black", font.main=4)
+abline(v=1997, col="red")
+```
+
+#### Decompose the time series into its components (a multiplicative model) and creat a plot of all decomposed components (blue lines, vertical divider at year 1997)
+
+```{r Q1c}
+DAXComp <- decompose(DAX_stock, type="mult")
+plot(DAXComp, col="blue")
+abline(v=1997, col="red")
+```
+
+### Q2: Temperature Data
+
+#### Q2a: Access to maxtemp dataset from fpp2 package and check maxtemp
+
+```{r Q2a}
+library(fpp2)
+ls("package:fpp2")
+autoplot(maxtemp)
+```
+
+#### Q2b: Clean data and keep inforamtion after year 1990
+
+```{r Q2b}
+TempSubset<-window(maxtemp, start=1990) #SES
+TempTs <- ts(TempSubset, frequency=1, start=1990)
+```
+
+#### Q2c: Utilize SES to predict the next 5 years of maximum temperatures in Melbourne. Plot the actual, predicted information, and blue separate line. All on one axis to have the fit, the predicted value line overlaying it and the forcast through 2021. Find the AICC value of this fitted model.
+
+```{r Q2c}
+TempSes <- ses(TempTs, h=5, level=c(80,95), fan=FALSE, initial=c("optimal", "simple"))
+plot(TempSes, ylab="Temperature", xlab="Year") # Forecasts form SES
+
+tActual <-TempSes$x
+tFitted <- TempSes$fitted
+tForecast <-TempSes$mean
+
+plotQ2c <-cbind(tActual, tFitted, tForecast) 
+
+library(dygraphs)
+dygraph(plotQ2c, main="Utilize SES to predict maximum annual temperatures", ylab="Maximum annual temperatures (degrees Celsius)", xlab ="Years") %>%
+  dySeries("tActual", label = "Actual", color="green") %>%
+  dySeries("tFitted", label = "Fitted", color="red") %>%
+  dySeries("tForecast", label="Forecast", color="blue") %>%
+    dyHighlight(highlightCircleSize = 6, highlightSeriesOpts = list(strokeWidth = 3))
+
+TempSes$model$aicc # AICC value 141.5302
+```
+
+#### Q2d: Use a damped Holt's linear trend for 5-year prediction and plot as in Q2c (initial="optimal")
+
+```{r Q2d}
+hPredict <- holt(TempSubset, type=c("additive", "multiplicative"),initial="optimal", h=5, damped=TRUE) #with damped trend
+hActual <- hPredict$x # Same as TempSubset
+hFitted <- hPredict$fitted
+hForecast <- hPredict$mean
+
+hAICC <- hPredict$model$aicc #AICC value 144.5819
+hAICC
+
+plotQ2d <- cbind(hActual, hFitted, hForecast)
+
+dygraph(plotQ2d ,main = "Utilize Holt's linear trend to predict Maximum annual temperatures",ylab="Maximum annual temperatures (degrees Celsius)", xlab ="Years") %>%
+    dySeries("hActual", label = "Actual", color = 'green') %>%
+    dySeries("hFitted", label = "Fitted", color = 'red') %>%
+    dySeries("hForecast", label = "Predicted", color = 'blue') %>%
+    dyOptions(axisLineColor = "black", gridLineColor = "grey") %>%
+    dyHighlight(highlightCircleSize = 6, highlightSeriesOpts = list(strokeWidth = 3)) 
+```
+
+#### Compare the AICC of the ses() and holt() models. Which model is better here?
+The AICC value for ses model (141.5302) is smaller than that from holt model (144.5819). Therefore, ses model is more accurate and better. 
+
+### Q3: The wands choose the wizard
+
+#### Q3a: Read two files (Gregorovitch.csv and Ollivander.csv)
+
+```{r Q3a}
+Gregorovitch <- read.csv("/Users/shanqinggu/Desktop/Gregorovitch.csv",header = FALSE)
+names(Gregorovitch) <-c("Date", "GregWand")
+head(Gregorovitch)
+
+Ollivander <- read.csv("/Users/shanqinggu/Desktop/Ollivander.csv",header = FALSE)
+names(Ollivander) <-c("Date", "OlliWand")
+head(Ollivander)
+```
+
+#### Q3b: Convert to proper date format
+
+```{r Q3b}
+Gregorovitch$Date <- as.Date(Gregorovitch$Date, format="%m/%d/%Y")
+Ollivander$Date <- as.Date(Ollivander$Date, format="%m/%d/%Y")
+```
+
+#### Q3c: Use library xts to make each data frame an xts object by odering with the Date variable
+
+```{r Q3c}
+library(xts)
+Ollivander <- xts(Ollivander$OlliWand, order.by=Ollivander$Date)
+Gregorovitch <- xts(Gregorovitch$GregWand, order.by=Gregorovitch$Date)
+
+class(c(Gregorovitch, Ollivander)) # confirm time series data
+```
+
+#### Q3d: Bind the two xts objects together and creat a dygraph (Effective title and x/y axes, label each series via dySeries, modify lines with different colors, activate a range selector, use dyShading to illuminate between 1995 to 1999, enable highlighting on the graph) 
+
+```{r Q3d}
+library(dygraphs)
+Wands <- cbind(Ollivander,Gregorovitch)
+names(Wands) <- c('Ollivander','Gregorovitch')
+dygraph(Wands, main = 'Ollivander and Gregorovitch Wands Sold Over Years', ylab = 'Wands Sold Quantity', xlab='Years') %>%
+  dySeries("Ollivander", label = "Ollivander", color = 'red') %>%
+  dySeries("Gregorovitch", label = "Gregorovitch", color = 'green') %>%              
+  dyOptions(stackedGraph = TRUE,drawPoints = TRUE, pointSize = 2) %>%
+  dyLegend(show = 'always', hideOnMouseOut = FALSE, width = 200) %>%
+  dyShading(from = '1995/1/1', to='1999/1/1',color = "cyan", axis = "x") %>%
+  dyRangeSelector(height= 5) %>%
+  dyHighlight(highlightCircleSize = 6, highlightSeriesOpts = list(strokeWidth = 3)) 
+```
+
+
+#### GitHub address for HW11: https://github.com/guvp2017/SMU6306.git
