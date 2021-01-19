@@ -1,4 +1,4 @@
-## Doing Data Science with R
+#### Doing Data Science with R
 
 * Homework repository for FiveThirtyEight data analysis (HW4)
 * Homework repository for Tidy Data (HW5)
