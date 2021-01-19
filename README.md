@@ -1,7 +1,7 @@
 #### Doing Data Science with R
 
-* Homework repository for FiveThirtyEight data analysis (HW4)
-* Homework repository for Tidy Data (HW5)
-* Homework repository for Preparing Daa (HW9)
-* Homework repository for Exploratory Data (HW10)
-* Homework repository for Time Series (HW11)
+* FiveThirtyEight data analysis (HW4)
+* Tidy Data (HW5)
+* Preparing Daa (HW9)
+* Exploratory Data (HW10)
+* Time Series (HW11)
