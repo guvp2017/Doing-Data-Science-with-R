@@ -2,6 +2,6 @@
 
 * FiveThirtyEight data analysis (DDS HW4)
 * Tidy Data (DDS HW5)
-* Preparing Daa (DDS HW9)
+* Preparing Data (DDS HW9)
 * Exploratory Data (DDS HW10)
 * Time Series (DDS HW11)
